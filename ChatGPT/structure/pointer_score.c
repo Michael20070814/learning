@@ -13,8 +13,8 @@ int main(void)
     printf("Please enter the name of the student: \n");
     scanf("%s", s1.name);
     printf("Please enter the score of the student: \n");
-    scanf("%d", s1.score);
-    printStudent(&s1);
+    scanf("%d", s1.score);//结构体时可以使用打点调用
+    printStudent(&s1);//参数是指针的时候传入一个地址
     updateScore(&s1, 95);
     printStudent(&s1);
     

@@ -26,7 +26,7 @@ struct Student * findTopStudent(struct Student *arr, int size)
     {
         if (arr[num].score > highest)
         {
-            highest = arr[num].score;
+            highest = arr[num].score;//标出最高分学生的下标
             tag = num;
         }
     }
