@@ -1,0 +1,5 @@
+2001,Jack,A9b3cD7Ef,0
+2002,Alice,Gh1jK5mN,1
+2003,Emma,Pq2R8sTv,2
+2004,Michael,Xy4Z6wU0,0
+2005,Emily,Bc8dF3gH,1
