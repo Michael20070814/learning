@@ -16,6 +16,8 @@ typedef struct log
 int find_latest(struct tm *input, int total);
 bool find_24h(struct tm *input, int total);
 bool find_48h(struct tm *input, int total);
+int load_black_list(char *filename, int *black_output);
+bool judge_black_list(int *black_output, int customer, int num);
 void updateBlacklist(void);
 int main(void)
 {
@@ -32,6 +34,9 @@ void updateBlacklist(void)
     n = i = client_num = journal = 0;
     log customer1[50];
     memset(customer1, 0, sizeof(customer1));
+    int blacklist[20];
+    memset(customer1, 0, sizeof(blacklist));
+    int black_num = load_black_list("blacklist.txt", blacklist);
     float litter;
     while (fgets(buffer, sizeof(buffer), fp) != NULL)
     {
@@ -43,7 +48,7 @@ void updateBlacklist(void)
         client[n].time.tm_mon = n2 - 1;
         client[n].time.tm_isdst = 0;
         n++;
-    }
+    }//数据的读取
 
     for (int num = 0; num < n; num++)
     {
@@ -79,10 +84,11 @@ void updateBlacklist(void)
         if (customer1[num].times >= 5)
         {
             int temp = find_latest(customer1[num].time, customer1[num].times);
-            fprintf(fp1, "%d,%04d-%02d-%02d %02d:%02d:%02d,INF\n", customer1[num].index, customer1[num].time[temp].tm_year + 1900, 
-                    customer1[num].time[temp].tm_mon + 1, customer1[num].time[temp].tm_mday, 
-                    customer1[num].time[temp].tm_hour, customer1[num].time[temp].tm_min,
-                    customer1[num].time[temp].tm_sec);
+            if (judge_black_list(blacklist, customer1[num].index, black_num))
+                fprintf(fp1, "%d,%04d-%02d-%02d %02d:%02d:%02d,INF\n", customer1[num].index, customer1[num].time[temp].tm_year + 1900, 
+                        customer1[num].time[temp].tm_mon + 1, customer1[num].time[temp].tm_mday, 
+                        customer1[num].time[temp].tm_hour, customer1[num].time[temp].tm_min,
+                        customer1[num].time[temp].tm_sec);
         }
         else if (find_24h(customer1[num].time, customer1[num].times) && !(find_48h(customer1[num].time, customer1[num].times)))
         {
@@ -90,12 +96,13 @@ void updateBlacklist(void)
             time_t timestamp = mktime(&customer1[num].time[temp]);
             timestamp += 86400 * 2;
             struct tm *future_tm = localtime(&timestamp);
-            fprintf(fp1, "%d,%04d-%02d-%02d %02d:%02d:%02d,%04d-%02d-%02d %02d:%02d:%02d\n", customer1[num].index, customer1[num].time[temp].tm_year + 1900, 
-                    customer1[num].time[temp].tm_mon + 1, customer1[num].time[temp].tm_mday, 
-                    customer1[num].time[temp].tm_hour, customer1[num].time[temp].tm_min,
-                    customer1[num].time[temp].tm_sec, future_tm->tm_year + 1900, 
-                    future_tm->tm_mon + 1, future_tm->tm_mday, future_tm->tm_hour,
-                    future_tm->tm_min, future_tm->tm_sec);
+            if (judge_black_list(blacklist, customer1[num].index, black_num))
+                fprintf(fp1, "%d,%04d-%02d-%02d %02d:%02d:%02d,%04d-%02d-%02d %02d:%02d:%02d\n", customer1[num].index, customer1[num].time[temp].tm_year + 1900, 
+                        customer1[num].time[temp].tm_mon + 1, customer1[num].time[temp].tm_mday, 
+                        customer1[num].time[temp].tm_hour, customer1[num].time[temp].tm_min,
+                        customer1[num].time[temp].tm_sec, future_tm->tm_year + 1900, 
+                        future_tm->tm_mon + 1, future_tm->tm_mday, future_tm->tm_hour,
+                        future_tm->tm_min, future_tm->tm_sec);
         }
         else if (find_48h(customer1[num].time, customer1[num].times))
         {
@@ -103,12 +110,13 @@ void updateBlacklist(void)
             time_t timestamp = mktime(&customer1[num].time[temp]);
             timestamp += 7 * 86400;
             struct tm *future_tm = localtime(&timestamp);
-            fprintf(fp1, "%d,%04d-%02d-%02d %02d:%02d:%02d,%04d-%02d-%02d %02d:%02d:%02d\n", customer1[num].index, customer1[num].time[temp].tm_year + 1900, 
-                    customer1[num].time[temp].tm_mon + 1, customer1[num].time[temp].tm_mday, 
-                    customer1[num].time[temp].tm_hour, customer1[num].time[temp].tm_min,
-                    customer1[num].time[temp].tm_sec, future_tm->tm_year + 1900, 
-                    future_tm->tm_mon + 1, future_tm->tm_mday, future_tm->tm_hour,
-                    future_tm->tm_min, future_tm->tm_sec);
+            if (judge_black_list(blacklist, customer1[num].index, black_num))
+                fprintf(fp1, "%d,%04d-%02d-%02d %02d:%02d:%02d,%04d-%02d-%02d %02d:%02d:%02d\n", customer1[num].index, customer1[num].time[temp].tm_year + 1900, 
+                        customer1[num].time[temp].tm_mon + 1, customer1[num].time[temp].tm_mday, 
+                        customer1[num].time[temp].tm_hour, customer1[num].time[temp].tm_min,
+                        customer1[num].time[temp].tm_sec, future_tm->tm_year + 1900, 
+                        future_tm->tm_mon + 1, future_tm->tm_mday, future_tm->tm_hour,
+                        future_tm->tm_min, future_tm->tm_sec);
         }
     }
 
@@ -170,4 +178,33 @@ bool find_48h(struct tm *input, int total)
             return true;
     }
     return false;
+}
+int load_black_list(char *filename, int *black_output)//返回对应黑名单已有长度
+{
+    FILE *fp2 = fopen(filename, "r");
+    char buffer[120];
+    int i = 0;
+    if (fp2 == NULL)
+        return 0;
+    while (fgets(buffer, 119, fp2) != NULL)
+    {
+        sscanf(buffer, "%d", &black_output[i]);
+        i++;
+    }
+
+    fclose(fp2);
+    return i;
+}
+bool judge_black_list(int *black_output, int customer, int num)//判断是否在黑名单上
+{
+    int value = 1;
+    for (int i = 0; i < num; i++)
+    {
+        if (customer == black_output[i])
+            value *= 0;
+    }
+    if (value == 0)
+        return false;
+    else
+        return true;
 }
