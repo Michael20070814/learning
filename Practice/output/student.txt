@@ -1,0 +1,4 @@
+17 Michael 98
+20 Dou 100
+16 Chen 90
+19 Minga 120
