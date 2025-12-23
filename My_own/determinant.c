@@ -22,7 +22,8 @@ int main(void)
             scanf("%d", &matrix[i][j]);
     int result = get_determinant(column1, matrix);
     printf("The determinant is %d\n", result);
-
+    getchar();
+    getchar();
     return 0;
 }
 int ** get_co_matrix(int n, int i, int **matrix)
