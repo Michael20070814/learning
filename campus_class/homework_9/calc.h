@@ -321,6 +321,7 @@ double MIN(double arr[], int n);
  * @note 简化实现，实际Excel中每个条件可针对不同范围
  */
 int COUNTIFS(double arr[], int n, condition_func conditions[], int condition_count);
+// condition_func 是函数类型指针 入参为double 返回值为int
 
 /**
  * @brief 返回给定数值集合的中值

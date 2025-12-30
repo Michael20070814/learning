@@ -33,7 +33,7 @@ struct RecordItem{
     struct RecordItem* next;
 };
 
-typedef struct Client_cost
+typedef struct Client_cost // 构造输出的结构体
 {
     int userID;
     int times;
@@ -103,7 +103,7 @@ struct RecordItem *Delete_Fail(const struct RecordItem * historyRecords, int *nu
     return new_head;
 }
 int convert_array(struct RecordItem *historyRecords, int length, Client_cost array[])//length应该是用户的数量
-{
+{ // 把用户的不同交易记录合成消费总额
     struct RecordItem *origin = historyRecords;
     memset(array, 0, sizeof(Client_cost) * length);
     int index = 0;

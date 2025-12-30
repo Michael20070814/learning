@@ -113,15 +113,14 @@ bool judge_A(struct RecordItem *currentCart)
     struct RecordItem *p = currentCart;
     while (p != NULL)
     {
-        if(p->productType == DRINK)
+        if(p->productType == DRINK)// 购买了饮品
             value = 1;
-        if (p -> productType == SNACK)
+        if (p -> productType == SNACK) // 购买零食
             value2 = 1;
         p = p-> next;
     }
-    if (value == 1)
-        if (value2 == 1)
-            return true;
+    if (value == 1 && value2 == 1)
+        return true;
     return false;
 }
 bool judge_B(struct RecordItem *currentCart)
@@ -137,8 +136,7 @@ bool judge_B(struct RecordItem *currentCart)
             value2 = 1;
         p = p -> next;
     }
-    if (value == 1)
-        if (value2 == 1)
+    if (value == 1 && value2 == 1)
             return true;
     return false;
 }
@@ -147,7 +145,7 @@ float calc_price(struct RecordItem *currentCart)
     float money = 0;
     struct RecordItem *p = currentCart;
     while (p != NULL)
-    {    
+    {
         money += p -> price * p -> quantity;
         p = p -> next;
     }
