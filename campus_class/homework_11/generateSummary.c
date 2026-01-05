@@ -148,6 +148,7 @@ void sequence(Client_cost list[], int length)
                 swap(&list[i], &list[i + 1]);
             if (list[i].money == list[i + 1].money && list[i].userID > list[i + 1].userID)
                 swap(&list[i], &list[i + 1]);//三个条件多重判定
+            // 可以使用类似时间的对比 
         }
     }
 /*   for (int num = 0; num < length; num++)
