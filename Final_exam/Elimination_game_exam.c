@@ -2,8 +2,12 @@
 #include <stdbool.h>
 int main(void)
 {
-    int row, column, n, m;
+    int row, column, n, m, index;
+    index = 0;
     scanf("%d%d", &row, &column);
+    int Elimination_x[row * column / 3];
+    int Elimination_y[row * column / 3];
+    int length[row * column / 3];
     int game_board[row][column];
     for (int m = 0; m < row; m++)
     {
@@ -24,11 +28,15 @@ int main(void)
                 continue_num = game_board[m][n];
                 if (continue_value >= 3)
                 {
-                    for (int t = 1; t <= continue_value; t++)
-                    {
-                        // 要考虑列方向上是否会消除 但这里先不考虑
-                        game_board[m][n - t] = 0;
-                    }
+                    Elimination_x[index] = m;
+                    Elimination_y[index] = n;
+                    length[index] = continue_value;
+                    index++;
+                    // for (int t = 1; t <= continue_value; t++)
+                    // {
+                        
+                    //     game_board[m][n - t] = 0;
+                    // }
                 }
                 continue_value = 1;
             }
@@ -39,11 +47,15 @@ int main(void)
         }
         if (continue_value >= 3)
         {
-            for (int t = 1; t <= continue_value; t++)
-            {
-                        // 要考虑列方向上是否会消除 但这里先不考虑
-                game_board[m][n - t] = 0;
-            }
+            Elimination_x[index] = m;
+            Elimination_y[index] = n;
+            length[index] = continue_value;
+            index++;
+            // for (int t = 1; t <= continue_value; t++)
+            // {
+            //     // 要考虑列方向上是否会消除 但这里先不考虑
+            //     game_board[m][n - t] = 0;
+            // }
         }
     }
 
@@ -82,6 +94,13 @@ int main(void)
                 game_board[m - t][n] = 0;
             }
         }  
+    }
+    for (int x = 0; x < index; x++)
+    {
+        for (int t = 1; t <= length[x]; t++)
+        {
+            game_board[Elimination_x[x]][Elimination_y[x] - t] = 0; // 通过记忆第一次消除的位置，来达到行列同消
+        }
     }
 
 
