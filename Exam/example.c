@@ -1,81 +1,159 @@
 #include <stdio.h>
-#include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
+#define OP_SUM -1
+#define OP_SUB -2
+#define OP_MUL -3
+#define OP_DIV -4
 
-int main() 
+void delete_space(char *s)
 {
-    char line[1000];
-    fgets(line, sizeof(line), stdin);
-    
-    // 去除'='及之后的内容
-    for (int i = 0; line[i]; i++) 
+    char *p = s;
+    int index = 0;
+    while (*p != '\0')
     {
-        if (line[i] == '=')
-        {   
-            line[i] = '\0';
-            break; 
-        }
-    }
-    
-    int nums[500];
-    char operator[500];
-    int num_Top = 0, operator_Top = 0;
-    
-    int i = 0;
-    int len = strlen(line);
-    
-    while (i < len) 
-    {
-        // 跳过空格
-        if (isspace(line[i]))
+        if (isspace(*p))
         {
-            i++; 
+            p++;
             continue;
         }
-        
-        // 读取数字
-        if (isdigit(line[i]))
+        else
         {
-            int num = 0;
-            while (i < len && isdigit(line[i]))
-            {
-                num = num * 10 + (line[i] - '0');
-                i++;
-            }
-            nums[num_Top++] = num;
-            
-            while (operator_Top > 0 && (operator[operator_Top-1] == '*' || operator[operator_Top-1] == '/'))
-            {
-                int b = nums[--num_Top];
-                int a = nums[--num_Top];
-                char op = operator[--operator_Top];
-                if (op == '*') 
-                    nums[num_Top++] = a * b;
-                else           
-                    nums[num_Top++] = a / b;
-            }
-        }
-        // 读取运算符
-        else if (line[i] == '+' || line[i] == '-' || line[i] == '*' || line[i] == '/')
-        {
-            operator[operator_Top++] = line[i];
-            i++;
-        }
-        else 
-        {
-            i++;
+            s[index] = *p;
+            index++;
+            p++;
         }
     }
-    
-    int result = nums[0];
-    for (int j = 0; j < operator_Top; j++)
+    s[index] = '\0';
+}
+
+int get_priority(char s)
+{
+    switch (s)
     {
-        if (operator[j] == '+')
-            result += nums[j+1];
-        else               
-            result -= nums[j+1];
+        case '+':
+        case '-':
+            return 1;
+        case '*':
+        case '/':
+            return 2;
+        default:
+            return 0;
+    }
+}
+
+int *shunting_yard(char *s, int *size)
+{
+    char *p = s;
+    int index = 0;
+    char operator[500];
+    int *output = (int *)malloc(sizeof(int) * 1000);
+    int output_index = 0;int operator_index = -1;
+    while (s[index] != '\0')
+    {
+        if (output_index > 0 && isdigit(s[index - 1]) && isdigit(s[index]))
+        {
+            output[output_index - 1] = output[output_index - 1] * 10 + s[index] - '0';
+        }
+        else if (isdigit(s[index]) && (output_index == 0 || (!isdigit(s[index - 1]))))
+        {
+            output[output_index++] = s[index] - '0';
+        }
+        else if (s[index] == '(')
+        {
+            operator[++operator_index] = *p;
+        }
+        else if (s[index] == ')')
+        {
+            while (operator[operator_index] != '(')
+            {
+                if (operator[operator_index] == '+') output[output_index] = OP_SUM;
+                else if (operator[operator_index] == '-') output[output_index] = OP_SUB;
+                else if (operator[operator_index] == '*') output[output_index] = OP_MUL;
+                else if (operator[operator_index] == '/') output[output_index] = OP_DIV;
+                output_index++;
+                operator_index--;
+            }
+        }
+        else if (s[index] == '+' || s[index] == '-' || s[index] == '*' || s[index] == '/')
+        {
+            while (operator_index > -1 && get_priority(operator[operator_index]) >= get_priority(s[index]))
+            {
+                char op = operator[operator_index--];
+                if (op == '+') output[output_index++] = OP_SUM;
+                else if (op == '-') output[output_index++] = OP_SUB;
+                else if (op == '*') output[output_index++] = OP_MUL;
+                else if (op == '/') output[output_index++] = OP_DIV;
+            }
+            operator[++operator_index] = s[index];
+        }
+        index++;
+    }
+    while (operator_index > -1)
+    {
+        char op = operator[operator_index--];
+        if (op == '+') output[output_index++] = OP_SUM;
+        else if (op == '-') output[output_index++] = OP_SUB;
+        else if (op == '*') output[output_index++] = OP_MUL;
+        else if (op == '/') output[output_index++] = OP_DIV;
     }
     
-    printf("%d\n", result);
+    *size = output_index;
+
+    return output;
+}
+
+int calculate(int *s, int size)
+{
+    int result[100];int index = 0;
+    for (int i = 0; i < size; i++)
+    {
+        if (s[i] >= 0)
+            result[index++] = s[i];
+        else if (s[i] == OP_MUL)
+        {
+            int temp = result[index - 1] * result[index - 2];
+            index = index - 2;
+            result[index++] = temp;
+        }
+        else if (s[i] == OP_SUM)
+        {
+            int temp = result[index - 1] + result[index - 2];
+            index = index - 2;
+            result[index++] = temp;
+        }
+        else if (s[i] == OP_SUB)
+        {
+            int temp = result[index - 2] - result[index - 1];
+            index = index - 2;
+            result[index++] = temp;
+        }
+        else if (s[i] == OP_DIV)
+        {
+            int temp = result[index - 2] / result[index - 1];
+            index = index - 2;
+            result[index++] = temp;
+        }
+    }
+    return result[0];
+}
+
+int main(void)
+{
+    char s[2000];
+    int size;
+    
+    if (fgets(s, 1999, stdin) == NULL)
+        return 0;
+    
+    delete_space(s);
+
+    int *yard = shunting_yard(s, &size);
+
+    int result = calculate(yard, size);
+
+    printf("%d", result);
+
     return 0;
 }
