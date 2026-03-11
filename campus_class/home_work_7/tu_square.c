@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
-#define LEN 15
+#define LEN 15 // 求解多边形面积
+
 double distance(int x1, int y1, int x2, int y2);
 double tri_square(double length1, double length2, double length3);
 double axis_square(int x1, int y1, int x2, int y2, int x3, int y3);
