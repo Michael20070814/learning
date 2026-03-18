@@ -70,7 +70,8 @@ int main()  // 边读取边处理
             name_count[unique_count] = 0;
             strcpy(entries[entry_count].display_name, name);
             unique_count++;
-        } else 
+        }
+        else 
         {
             // 重复姓名
             name_count[found]++; // 记录对应名字出现次数
