@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #define BOOK_SIZE 501
 #define BOOK_NAME 51
 #define AUTHOR_NAME 21
@@ -232,21 +233,29 @@ void delete_book(char *buffer, book **head)
 
 void output(book *head, char *filename)
 {
-    if (head == NULL || filename == NULL)
+    if (filename == NULL)
         return;
 
     FILE *fp = fopen(filename, "w");
     if (fp == NULL)
         return;
 
+    if (head == NULL)
+    {
+        fclose(fp);
+        return;
+    }
+
     book *cur = head;
     while (cur != NULL)
     {
-        fprintf(fp, "%-50s%-20s%-20s%-10s\n",
+        fprintf(fp, "%-50s%-20s%-30s%-10s",
                 cur->book_name,
                 cur->book_author,
                 cur->book_press,
                 cur->book_date);
+        if (cur->next_book != NULL)
+            fputc('\n', fp);
         cur = cur->next_book;
     }
 
