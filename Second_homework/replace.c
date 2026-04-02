@@ -27,7 +27,7 @@ int main(void)
 
     return 0;
 }
-
+// read the file
 char *input(char *filename) 
 {
     FILE *fp = fopen(filename, "r");
@@ -66,10 +66,11 @@ char *process_buffer(char *buffer, char *replacement, char *be_replaced)
     while ((q = search_str(p, be_replaced)) != NULL)
     {
         int sub = q - p;
+        // move the string
         for (int m = 0; m < sub; m++)
             new_buffer[index++] = *(p + m);
         p = q + strlen(be_replaced);
-
+        // add the replacement
         for (int i = 0; i < length; i++)
             new_buffer[index++] = replacement[i];
     }

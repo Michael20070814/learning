@@ -36,26 +36,32 @@ int main(void)
     getchar();
     while (num != 0)
     {
-        if (num == 1)
+        switch (num)
         {
-            char *buffer = (char *) malloc (sizeof(char) * ROW_LENGTH);
-            fgets(buffer, ROW_LENGTH, stdin);
-            insert_book(buffer, &head);
-            free(buffer);
-        }
-        else if (num == 2)
-        {
-            char *buffer = (char *) malloc (sizeof(char) * ROW_LENGTH);
-            fgets(buffer, ROW_LENGTH, stdin);
-            search_book(buffer, head);
-            free(buffer);
-        }
-        else if (num == 3)
-        {
-            char *buffer = (char *) malloc (sizeof(char) * ROW_LENGTH);
-            fgets(buffer, ROW_LENGTH, stdin);
-            delete_book(buffer, &head);
-            free(buffer);
+            case 1:
+            {
+                char *buffer = (char *) malloc (sizeof(char) * ROW_LENGTH);
+                fgets(buffer, ROW_LENGTH, stdin);
+                insert_book(buffer, &head);
+                free(buffer);
+                break;
+            }
+            case 2:
+            {
+                char *buffer = (char *) malloc (sizeof(char) * ROW_LENGTH);
+                fgets(buffer, ROW_LENGTH, stdin);
+                search_book(buffer, head);
+                free(buffer);
+                break;
+            }
+            case 3:
+            {
+                char *buffer = (char *) malloc (sizeof(char) * ROW_LENGTH);
+                fgets(buffer, ROW_LENGTH, stdin);
+                delete_book(buffer, &head);
+                free(buffer);
+                break;
+            }
         }
         scanf("%d", &num);
         getchar();
