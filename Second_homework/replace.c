@@ -101,7 +101,7 @@ void output(char *filename, char *buffer)
     fclose(fp);
     return ;
 }
-
+// check the string and return the length
 char *search_str(char *src, char *obj)
 {
     int src_length = strlen(src); int obj_length = strlen(obj);
