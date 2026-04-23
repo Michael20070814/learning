@@ -1,36 +1,74 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#define SIZE 1000
 #define MAXSIZE 100
 #define LENGTH 50
 
-typedef struct Stack
+typedef struct Operand
 {
     int operand;
     int location;
     char string[LENGTH];
+} Operand;
+
+typedef struct Stack
+{
+    Operand Doing[MAXSIZE];
     int top;
 } Stack;
 
 Stack String;
+char Str[SIZE];
 
 void init();
 int isEmpty();
 int isFull();
-int push(int x);
+int push(char *input);
 int pop();
+void record();
 
+int main(void)
+{
+    init();
+    memset(Str, 0, sizeof(char) * SIZE);
 
+    scanf("%s", Str);
 
+    record();
 
+    int num ;
+    char buffer[LENGTH];
+    fgets(buffer, LENGTH - 1, stdin);
+    sscanf(buffer, "%d", &num);
+
+    while (num != -1) 
+    {
+        switch (num)
+        {
+            case 3:
+            pop();
+            break;
+            case 2:
+            case 1:
+            push(buffer);
+            break;
+        }
+    }
+
+    printf("%s", Str);
+
+    return 0;
+}
 
 void init()
 {
-    Over.top = -1;
+    String.top = -1;
 }
 
 int isEmpty()
 {
-    if (Over.top == -1)
+    if (String.top == -1)
         return 1;
     else
         return 0;
@@ -38,21 +76,50 @@ int isEmpty()
 
 int isFull()
 {
-    if (Over.top == MAXSIZE - 1)
+    if (String.top == MAXSIZE - 1)
         return 1;
     else
         return 0;
 }
 
-int push(int x)
+int push(char *input)
 {
+    int operand; int location; int n;
+    char content[LENGTH];
+
+    sscanf(input, "%d", &operand);
+    
+    if (operand == 1)
+    {
+        sscanf(input, " %d %s", &location, content);
+        int L = strlen(content);
+        int length = strlen(Str) - location + 1;
+
+        memmove(&Str[location + L], &Str[location], length + 1);
+        strncpy(&Str[location], &content, L);
+    }
+    else if (operand == 2)
+    {
+        sscanf(input, " %d %d", &location, &n);
+        int L = strlen(Str);
+
+        strncpy(content, &Str[location], n);
+        content[n + 1] = '\0';
+        int length = L - location - n + 1;
+        memmove(&Str[location], &Str[location + n], length + 1);
+    }
+    
     if (isFull())
     {
         printf("error ");
         return 0;
     }
 
-    Over.data[++Over.top] = x;
+    String.top++;
+    String.Doing[String.top].operand = operand;
+    String.Doing[String.top].location = location;
+    strcpy(String.Doing[String.top].string, content);
+
     return 1;
 }
 
@@ -64,6 +131,25 @@ int pop()
         return 0;
     }
 
-    printf("%d ", Over.data[Over.top--]);
+    // Parse
+    int operand = String.Doing[String.top].operand;
+    if (operand == 1)
+    {
+        int n = String.Doing[String.top].location;
+        int length = strlen(String.Doing[String.top].string);
+
+        int L = strlen(Str) - n - length + 1;
+        memmove(&Str[n], &Str[n + length], L + 1);
+    }
+    else if(operand == 2)
+    {
+        int n = String.Doing[String.top].location;
+        int length = strlen(String.Doing[String.top].string);
+        int L = strlen(Str) - n + 1;
+        memmove(&Str[n + length], &Str[n], L + 1);
+    }
+
+    String.top--;
     return 1;
 }
+
