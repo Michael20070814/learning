@@ -3,7 +3,6 @@
 #include <string.h>
 #define SIZE 512
 #define MAXSIZE 100
-#define LENGTH 50
 
 typedef struct Operand
 {
@@ -37,13 +36,6 @@ int main(void)
     fgets(Str, SIZE - 1, stdin);
     replace_n(Str);
 
-    // char temp[LENGTH];
-
-    // fgets(temp, LENGTH - 1, stdin);
-    // replace_n(temp);
-    // push(temp);
-    // pop();
-
     record();
 
     int num ;
@@ -64,6 +56,7 @@ int main(void)
             break;
         }
         fgets(buffer, SIZE - 1, stdin);
+        replace_n(buffer);
         sscanf(buffer, "%d", &num);
     }
 
@@ -112,7 +105,7 @@ int push(char *input)
         int L = strlen(content);
         int length = strlen(Str) - location + 1;
 
-        memmove(&Str[location + L], &Str[location], length + 1);
+        memmove(&Str[location + L], &Str[location], length);
         strncpy(&Str[location], content, L);
     }
     else if (operand == 2)
@@ -124,7 +117,7 @@ int push(char *input)
         content[n] = '\0';
         int length = L - location - n + 1;
         if (location + n < L)
-            memmove(&Str[location], &Str[location + n], length + 1);
+            memmove(&Str[location], &Str[location + n], length);
         else
             Str[location] = '\0';
     }
@@ -141,7 +134,6 @@ int pop()
 {
     if (isEmpty())
     {
-        printf("error ");
         return 0;
     }
 
@@ -153,7 +145,7 @@ int pop()
         int length = strlen(String.Doing[String.top].string);
 
         int L = strlen(Str) - n - length + 1;
-        memmove(&Str[n], &Str[n + length], L + 1);
+        memmove(&Str[n], &Str[n + length], L);
     }
     else if(operand == 2)
     {
@@ -183,13 +175,13 @@ void record()
         String.top++;
         fgets(buffer, SIZE - 1, stdin);
         sscanf(buffer, "%d %d %s", &operand, &location, content);
-        size_t n = strcspn(content, "\n");
-        content[n] = '\0';
 
         String.Doing[String.top].location = location;
         String.Doing[String.top].operand = operand;
         strcpy(String.Doing[String.top].string, content);
     }
+
+    getchar(); // 中间会有一个空行
 }
 
 void replace_n(char *input)
