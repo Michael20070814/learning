@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define SIZE 1000
+#define SIZE 512
 #define MAXSIZE 100
 #define LENGTH 50
 
@@ -9,7 +9,7 @@ typedef struct Operand
 {
     int operand;
     int location;
-    char string[LENGTH];
+    char string[SIZE];
 } Operand;
 
 typedef struct Stack
@@ -47,8 +47,8 @@ int main(void)
     record();
 
     int num ;
-    char buffer[LENGTH];
-    fgets(buffer, LENGTH - 1, stdin);
+    char buffer[SIZE];
+    fgets(buffer, SIZE - 1, stdin);
     sscanf(buffer, "%d", &num);
 
     while (num != -1) 
@@ -63,7 +63,7 @@ int main(void)
             push(buffer);
             break;
         }
-        fgets(buffer, LENGTH - 1, stdin);
+        fgets(buffer, SIZE - 1, stdin);
         sscanf(buffer, "%d", &num);
     }
 
@@ -96,7 +96,7 @@ int isFull()
 int push(char *input)
 {
     int operand; int location; int n;
-    char content[LENGTH];
+    char content[SIZE];
 
     if (isFull())
     {
@@ -123,7 +123,10 @@ int push(char *input)
         strncpy(content, &Str[location], n);
         content[n] = '\0';
         int length = L - location - n + 1;
-        memmove(&Str[location], &Str[location + n], length + 1);
+        if (location + n < L)
+            memmove(&Str[location], &Str[location + n], length + 1);
+        else
+            Str[location] = '\0';
     }
     
     String.top++;
@@ -168,15 +171,17 @@ int pop()
 void record()
 {
     int num ;
-    int operand; int location; char content[LENGTH];
-    char buffer[LENGTH * 2];
+    int operand; int location; char content[SIZE];
+    char buffer[SIZE * 2];
 
     scanf("%d", &num);
+    // remove the \n
+    getchar();
 
     for (int m = 0; m < num; m++)
     {
         String.top++;
-        fgets(buffer, LENGTH - 1, stdin);
+        fgets(buffer, SIZE - 1, stdin);
         sscanf(buffer, "%d %d %s", &operand, &location, content);
         size_t n = strcspn(content, "\n");
         content[n] = '\0';
