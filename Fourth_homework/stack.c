@@ -32,7 +32,6 @@ int main(void)
             case 1:
             scanf("%d", &temp);
             push(temp);
-            break;
             case 0:
             pop();
             break;
