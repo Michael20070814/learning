@@ -56,8 +56,10 @@ char* reverseWords(char* s)
 }
 int main(void)
 {
-    char input[] = "  hello world  ";
-    reverseWords(input);
+    char input[] = "In 1983, ANSI established a committee to provide a modern, comprehensive definition of C.";
+    char *result = reverseWords(input);
+
+    printf("%s", result);
 
     return 0;
 }
