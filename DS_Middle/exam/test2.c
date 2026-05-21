@@ -10,69 +10,111 @@ typedef struct unknown
     struct unknown *next;
 } unknown;
 
+unknown list;
+int count;
+
+void init(); // 初始化链表
+void InsertNode(int coeff, int expon); // 插入节点
+void print(); // 打印最后的多项式
+
 int main(void)
 {
-    unknown list;
-    unknown *p;
+    init();
 
-    list.exponent = 0;
-    list.coefficient = 0;
-    list.next = NULL;
-
-    int count = 0;
+    // 测试用例
+    // InsertNode(100, 25);
+    // InsertNode(8, 1000);
+    // InsertNode(-64, 25);
+    // InsertNode(100, 0);
+    // InsertNode(-36, 25);
+    // InsertNode(-6, 1000);
+    // InsertNode(-50, 1);
+    
+    // print();
 
     int coeff, expon; 
     while (scanf("%d%d", &coeff, &expon) == 2)
     {
         if (coeff == 0 && expon == -1)
             break;
-        p = (unknown *) malloc(sizeof(unknown));
 
-        p -> coefficient = coeff;
-        p -> exponent = expon;
-        p -> next = NULL;
-
-        if (list.next == NULL)
-        {    
-            list.next = p;
-        }
-        else
-        {
-            unknown *iter;
-            unknown *before;
-            before = &list;
-            iter = list.next;
-            int flag = 0;
-            while (iter != NULL && iter -> exponent >= p ->exponent)
-            {
-                count++;
-                if (iter -> exponent == p -> exponent)
-                {    
-                    flag = 1;
-                    break;
-                }
-                before = before -> next;
-                iter = iter -> next;
-            }
-
-            if (flag == 1)
-            {    
-                if (iter -> exponent == p ->exponent)
-                    before -> next = iter -> next;
-                else
-                    iter ->coefficient += p ->coefficient;
-            }
-            else if (iter == NULL)
-                before -> next = p;
-            else
-            {    
-                before -> next = p;
-                p -> next = iter;
-            }
-        }
-    
+        InsertNode(coeff, expon);
     }
 
+    print();
+
+    return 0;
+}
+
+void init()
+{
+    list.exponent = 0;
+    list.coefficient = 0;
+    list.next = NULL;
+    count = 0;
+}
+
+void InsertNode(int coeff, int expon)
+{
+    unknown *p = (unknown *) malloc(sizeof(unknown));
+
+    p -> coefficient = coeff;
+    p -> exponent = expon;
+    p -> next = NULL;
+
+    if (list.next == NULL)
+    {    
+        list.next = p;
+    }
+    else
+    {
+        unknown *iter;
+        unknown *before;
+        before = &list;
+        iter = list.next;
+        int flag = 0;
+
+        // 比较大小确定插入位置
+        while (iter != NULL && iter -> exponent >= p ->exponent)
+        {
+            count++;
+            if (iter -> exponent == p -> exponent)
+            {    
+                flag = 1;
+                break;
+            }
+            before = before -> next;
+            iter = iter -> next;
+        }
+
+        // 补足完全没进入循环的情况
+        if (iter != NULL && iter -> exponent < p -> exponent)
+            count++;
+
+        // 指数相等，则只需要进行系数变换
+        if (flag == 1)
+        {    
+            // 恰好是相反数
+            if (iter -> coefficient == -p -> coefficient)
+            {    
+                before -> next = iter -> next;
+                free(iter);
+            }
+            else
+                iter ->coefficient += p ->coefficient;
+        }
+        else if (iter == NULL)
+            before -> next = p;
+        else
+        {
+            before -> next = p;
+            p -> next = iter;
+        }
+    }
+}
+
+void print()
+{
     unknown *iter = &list;
 
     while (iter -> next != NULL)
@@ -81,40 +123,4 @@ int main(void)
         iter = iter ->next;
     }
     printf("%d\n", count);
-
-    return 0;
-}
-
-unknown* input(void)
-{
-    unknown *list = NULL, *p, *tail;
-    char buffer[LEN];
-    
-    fgets(buffer, sizeof(buffer), stdin);
-
-    int coeff, expon, n; char *ptr = buffer;
-    while (sscanf(ptr, "%d%d%n", &coeff, &expon, &n) == 2)
-    {
-        p = (unknown *) malloc(sizeof(unknown));
-        if (p == NULL)
-            return NULL;
-
-        p -> coefficient = coeff;
-        p -> exponent = expon;
-        p -> next = NULL;
-
-        if (list == NULL)
-        {    
-            list = p;
-            tail = p;
-        }
-        else
-        {
-            tail -> next = p;
-            tail = tail -> next;
-        }
-        ptr += n;
-    }
-
-    return list;
 }

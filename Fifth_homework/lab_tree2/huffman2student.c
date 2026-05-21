@@ -20,8 +20,9 @@ void statCount();        //步骤1：统计文件中字符频率
 void createHTree();        //步骤2：创建一个Huffman树，根节点为Root 
 void makeHCode();        //步骤3：根据Huffman树生成Huffman编码
 void atoHZIP();         //步骤4：根据Huffman编码将指定ASCII码文本文件转换成Huffman码文件
-void makeTree(struct tnode *list[128], struct tnode *list2[128], int *index);
-int getNum(struct tnode *list[128]);
+void makeTree(struct tnode *list[128], struct tnode *list2[128], int *index); // 把两个进行合并
+int getNum(struct tnode *list[128]); // 获取元素数量
+void visitHTree(struct tnode *p, char *buffer, int index); // 前序遍历根节点为Root的树
 
 void print1();            //输出步骤1的结果
 void print2(struct tnode *p);    //输出步骤2的结果 
@@ -232,21 +233,46 @@ void createHTree()
 			Root = array[i];
 }
 
-
-
-
-
-
-
 //【实验步骤2】结束
 
 //【实验步骤3】开始
 void makeHCode()
 {
+	struct tnode *p;
+	int index = 0;
 
+	p = Root;
 
+	char buffer[MAXSIZE] = {0};
 	
+	visitHTree(p, buffer, index);
 } 
+
+void visitHTree(struct tnode *p, char *buffer, int index)
+{
+	if (p == NULL)
+		return ;
+
+	// 注意如果只有一个节点的话 要初始化一下
+	if (index == 0)
+	{
+		buffer[index] = '0';
+		buffer[index + 1] = '\0';
+	}
+
+	if (p -> right == NULL && p -> left == NULL)
+	{
+		strcpy(HCode[p -> c], buffer);
+		return;
+	}
+
+	buffer[index] = '0';
+	buffer[index + 1] = '\0';
+	visitHTree(p -> left, buffer, index + 1);
+	buffer[index] = '1';
+	buffer[index + 1] = '\0';
+	visitHTree(p -> right, buffer, index + 1);
+}
 
 
 
@@ -258,14 +284,59 @@ void makeHCode()
 //【实验步骤4】开始
 void atoHZIP()
 {
+	// 文件回到最开始
+	rewind(Src);
 
+	int c; int index = 0;
 
-	
+	unsigned char hc = 0;
+
+	// 按字符来进行读取
+	while ((c = fgetc(Src)) != EOF)
+	{
+		char *p;
+		p = HCode[c];
+
+		if (c == '\n')
+			continue;
+
+		for(int i = 0; p[i] != '\0'; i++) 
+		{
+			hc = (hc << 1) | (p[i]-'0');
+			if((index + 1) % 8 == 0)
+			{
+				fputc(hc, Obj);     //输出到目标（压缩）文件中
+				printf("%x",hc);
+			}
+			index++;
+		}
+	}
+
+	char *p = HCode[0];
+	// 处理最后的结尾字符
+	for(int i = 0; p[i] != '\0'; i++) 
+	{
+		hc = (hc << 1) | (p[i]-'0');
+		if((index + 1) % 8 == 0)
+		{
+			printf("%x",hc);//输出到目标（压缩）文件中
+			fputc(hc, Obj);     
+		}
+		index++;
+	}
+
+	// 处理最后不足八位的字符
+	// 不是所有的都需要输入
+	if (index % 8 != 0)
+	{
+		for ( ; index % 8 != 0; index++)
+		{
+			hc <<= 1;
+		}
+		fputc(hc, Obj);
+		printf("%x", hc);
+	}
 }
-
-
-
-
 
 //【实验步骤4】结束
 
@@ -324,7 +395,7 @@ void print4()
     in_size = ftell(Src);
     out_size = ftell(Obj);
     
-    printf("\n原文件大小：%ldB\n",in_size);
-    printf("压缩后文件大小：%ldB\n",out_size);
+    printf("\n原文件大小：%ldB\n", in_size);
+    printf("压缩后文件大小：%ldB\n", out_size);
     printf("压缩率：%.2f%%\n",(float)(in_size-out_size)*100/in_size);
 }
