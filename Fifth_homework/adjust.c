@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#define MAXSIZE 1000
 
 typedef struct TNode
 {
@@ -29,16 +30,17 @@ void order_tree(TNode *root); // 为树进行排序
 int main(void)
 {
     // test1 
-    TNode *root = create_tree();
+    // TNode *root = create_tree();
 
     // test2
-    insert_num(root);
+    // insert_num(root);
 
     // test3
-    order_tree(root);
-
-    // TNode *root = create_tree();
     // order_tree(root);
+
+    TNode *root = create_tree();
+    insert_num(root);
+    order_tree(root);
 
     return 0;
 }
@@ -156,7 +158,8 @@ void insert_num(TNode *root)
     {
         scanf("%d%d", &index, &client);
         TNode *p = search_tnode(root, index);
-        p -> Num = client;
+        if (p != NULL)
+            p -> Num = client;
     }
 }
 
@@ -165,16 +168,32 @@ void collect_value(TNode *root, struct temp *arr, int *count)
     if (root == NULL)
         return ;
 
-    if (root -> lchild == NULL && root -> mchild == NULL && 
-        root -> rchild == NULL)
-    {    
-        arr[(*count)].index = root -> index;
-        arr[(*count)++].Num = root -> Num;
-    }
+    TNode *queue[MAXSIZE];
 
-    collect_value(root -> lchild, arr, count);
-    collect_value(root -> mchild, arr, count);
-    collect_value(root -> rchild, arr, count);
+    int front = 0;
+    int rear = 0;
+    queue[rear++] = root;
+
+    while (front < rear)
+    {
+        TNode *p = queue[front++];
+
+        if (p == NULL)
+            continue;
+
+        if (p -> lchild == NULL && p -> mchild == NULL && 
+        p -> rchild == NULL)
+        {    
+            arr[(*count)].index = p -> index;
+            arr[(*count)++].Num = p -> Num;
+        }
+        if (p -> lchild != NULL)
+            queue[rear++] = p -> lchild;
+        if (p -> mchild != NULL)
+            queue[rear++] = p -> mchild;
+        if (p -> rchild != NULL)
+            queue[rear++] = p -> rchild;
+    }
 }
 
 void fill_value(TNode *root, struct temp *arr, int *count)
@@ -182,17 +201,34 @@ void fill_value(TNode *root, struct temp *arr, int *count)
     if (root == NULL)
         return ;
 
-    if (root -> lchild == NULL && root -> mchild == NULL && 
-        root -> rchild == NULL)
-    {
-        printf("%d->%d\n", root -> index, arr[(*count)++].index);
-        root -> index = arr[(*count)].index;
-        root -> Num = arr[(*count)].Num;
-    }
+    TNode *queue[MAXSIZE];
 
-    fill_value(root -> lchild, arr, count);
-    fill_value(root -> mchild, arr, count);
-    fill_value(root -> rchild, arr, count);
+    int front = 0;
+    int rear = 0;
+    queue[rear++] = root;
+
+    while (front < rear)
+    {
+        TNode *p = queue[front++];
+
+        if (p == NULL)
+            continue;
+
+        if (p -> lchild == NULL && p -> mchild == NULL && 
+        p -> rchild == NULL)
+        {    
+            printf("%d->%d\n", arr[(*count)].index, p -> index);
+            p -> index = arr[(*count)].index;
+            p -> Num = arr[(*count)++].Num;
+        }
+
+        if (p -> lchild != NULL)
+            queue[rear++] = p -> lchild;
+        if (p -> mchild != NULL)
+            queue[rear++] = p -> mchild;
+        if (p -> rchild != NULL)
+            queue[rear++] = p -> rchild;
+    }
 }
 
 int cmp(const void *p, const void *q)
