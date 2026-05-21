@@ -81,10 +81,8 @@ TNode *create_tree()
 
             if (i == 1)
                 ldata = num;
-            else if (i == 2 && num >= 100)
+            else if (i == 2)
                 mdata = num;
-            else if (i == 2 && num < 100)
-                rdata = num;
             else if (i == 3)
                 rdata = num;
         }
