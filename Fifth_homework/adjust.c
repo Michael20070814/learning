@@ -34,7 +34,8 @@ int main(void)
     // test2
     insert_num(root);
 
-
+    // test3
+    order_tree(root);
 
     // TNode *root = create_tree();
     // order_tree(root);
@@ -161,10 +162,13 @@ void insert_num(TNode *root)
 
 void collect_value(TNode *root, struct temp *arr, int *count)
 {
+    if (root == NULL)
+        return ;
+
     if (root -> lchild == NULL && root -> mchild == NULL && 
-        root -> rchild == NULL && root != NULL)
+        root -> rchild == NULL)
     {    
-        arr[(*count)++].index = root -> index;
+        arr[(*count)].index = root -> index;
         arr[(*count)++].Num = root -> Num;
     }
 
@@ -173,7 +177,51 @@ void collect_value(TNode *root, struct temp *arr, int *count)
     collect_value(root -> rchild, arr, count);
 }
 
+void fill_value(TNode *root, struct temp *arr, int *count)
+{
+    if (root == NULL)
+        return ;
+
+    if (root -> lchild == NULL && root -> mchild == NULL && 
+        root -> rchild == NULL)
+    {
+        printf("%d->%d\n", root -> index, arr[(*count)++].index);
+        root -> index = arr[(*count)].index;
+        root -> Num = arr[(*count)].Num;
+    }
+
+    fill_value(root -> lchild, arr, count);
+    fill_value(root -> mchild, arr, count);
+    fill_value(root -> rchild, arr, count);
+}
+
+int cmp(const void *p, const void *q)
+{
+    struct temp *a = (struct temp *)p;
+    struct temp *b = (struct temp *)q;
+
+    if (a -> Num > b -> Num)
+        return -1;
+    else if (a -> Num < b -> Num)
+        return 1;
+    else if (a -> index < b -> index)
+        return -1;
+    else if (a -> index > b -> index)
+        return 1;
+    else
+        return 0;
+}
+
 void order_tree(TNode *root)
 {
+    int num = 0;
+    int size = tree_leaf_count(root);
+    struct temp obj[size];
 
+    collect_value(root, obj, &num);
+
+    qsort(obj, size, sizeof(struct temp), cmp);
+
+    num = 0;
+    fill_value(root, obj, &num);
 }
