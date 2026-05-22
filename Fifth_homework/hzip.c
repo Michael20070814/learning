@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define MAXSIZE 32
+#define MAXSIZE 256
 
 struct tnode {            //Huffman树结构
     char c;        
@@ -68,17 +68,17 @@ int main(int argc, char **argv)
     if (argc == 2)
     {
         // 文件读取
-        if((Src=fopen(file,"r"))==NULL) 
+        if((Src=fopen(file,"rb"))==NULL) 
         {
             fprintf(stderr, "%s open failed!\n", "input.txt");
             return 1; 
         }
 
         // 文件写入
-        char *p = strstr(file, ".txt");
+        char *p = strrchr(file, '.');
         strcpy(p, ".hzip");
 
-        if((Obj=fopen(file,"w"))==NULL)
+        if((Obj=fopen(file,"wb"))==NULL)
         {
             fprintf(stderr, "%s open failed!\n", "output.txt");
             return 1;
@@ -275,6 +275,7 @@ void makeTree(struct tnode *list[128], struct tnode *list2[128], int *index)
 void createHTree()
 {
 	struct tnode *p;
+	Root = NULL;
 	// 创建树林
 	struct tnode* TnodeList[128] = {0};
 	struct tnode* array[128] = {0}; int index = 0;
@@ -298,6 +299,10 @@ void createHTree()
 	for (int i = 0; i < 128; i++)
 		if (array[i] != NULL)
 			Root = array[i];
+
+	// for (int i = 0; Root == NULL && i < 128; i++)
+	// 	if (TnodeList[i] != NULL)
+	// 		Root = TnodeList[i];
 }
 
 
@@ -321,7 +326,7 @@ void visitHTree(struct tnode *p, char *buffer, int index)
 
 	if (p -> right == NULL && p -> left == NULL)
 	{
-		strcpy(HCode[p -> c], buffer);
+		strcpy(HCode[(unsigned char)p -> c], buffer); // 转换为正常的数字而不是使用假意转换
 		return;
 	}
 
@@ -377,6 +382,7 @@ void atoHZIP()
 			if((index + 1) % 8 == 0)
 			{
 				fputc(hc, Obj);     //输出到目标（压缩）文件中
+				hc = 0; // 直接重置
 				// printf("%x",hc); // 直接打印出来
 			}
 			index++;
@@ -392,6 +398,7 @@ void atoHZIP()
 		{
 			// printf("%x",hc);//输出到目标（压缩）文件中
 			fputc(hc, Obj); // 直接打印出来
+			hc = 0;
 		}
 		index++;
 	}
@@ -411,40 +418,42 @@ void atoHZIP()
 
 void printHCode()
 {
-    unsigned char hc = 0;
+    int count = 0;
 
-    // Part1 写入码表长度
     for (int i = 0; i < 128; i++)
-    {
         if (HCode[i][0] != '\0')
-            hc++;
-    }
-    fputc(hc, Obj);
+            count++;
+    fputc(count, Obj);
 
-    // Part2 写入码表长度
-    int index;
     for (int i = 0; i < 128; i++)
     {
-        
-        index = 0;
-        char *p = HCode[i]; 
+        char *p = HCode[i];
 
         if (p[0] != '\0')
         {
-            fputc(i, Obj); // 打印ASCII值
-            int i;
-            for(i = 0; p[i] != '\0'; i++) 
-            {
-                hc = (hc << 1) | (p[i]-'0');
-                index++;
-            }
-            fputc(i, Obj); // 打印码长
+            int len = strlen(p);
+            unsigned char hc = 0;
+            int index = 0;
 
-            for ( ; index % 8 != 0; index++)
+            fputc(i, Obj);
+            fputc(len, Obj);
+
+            for (int j = 0; j < len; j++)
             {
-                hc <<= 1;
+                hc = (hc << 1) | (p[j] - '0');
+                index++;
+                if (index % 8 == 0)
+                {
+                    fputc(hc, Obj);
+                    hc = 0;
+                }
             }
-            fputc(hc, Obj); // 打印Huffman编码
+
+            if (index % 8 != 0)
+            {
+                hc <<= 8 - index % 8; // 左移补齐8位数字
+                fputc(hc, Obj);
+            }
         }
     }
 }
