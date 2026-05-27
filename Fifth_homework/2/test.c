@@ -20,7 +20,7 @@ int main(void)
     strcpy(p, ".txt");
     Obj=fopen(file,"wb");
 
-    CalcCount();
+    CalcCount(); // 词表注册成功
     HZIPtoa();
 }
 
@@ -60,12 +60,15 @@ char *GetHuffman(int length)
 void HZIPtoa()
 {
 	int type = 0;
-	int bit;
+	unsigned char bit = 0;
 	char judge[MAXSIZE];
 	int index = 0;
 
 	while ((bit = get_next_bit(&type)) != -1)
 	{
+		if (index >= MAXSIZE - 1)
+			return ;
+
 		judge[index++] = '0' + bit;
 		judge[index] = '\0';
 
@@ -73,19 +76,24 @@ void HZIPtoa()
 		{
 			if (strcmp(HCode[i], judge) == 0)
 			{
+				if (i == 0)
+					return;
+					
 				fputc(i, Obj);
 				index = 0;
 				break;
 			}
 		}
+
 	}
+
 }
 
 int get_next_bit(int *type)
 {
 	if (bits_left == 0)
 	{
-		if (fread(&type, 1, 1, Src) != 1)
+		if (fread(type, 1, 1, Src) != 1)
 			return -1;
 		bits_left = 8;
 	}
