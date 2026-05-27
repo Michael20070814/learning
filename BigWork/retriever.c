@@ -4,8 +4,8 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
-#define MAXSIZE 512
-#define LENGTH 128
+#define MAXSIZE 2048
+#define LENGTH 512
 #define DIM 7
 
 typedef struct vector
@@ -42,7 +42,7 @@ void print(int num, int *result); // 打印输出
 int line_num = 0; // 表示句子存储的位置、序号
 char global[MAXSIZE][LENGTH]; // 存储全局句子
 int dict_num = 0; // 表示字典中单词的数量
-char dict[LENGTH][LENGTH / 4]; // 存储全局字典
+char dict[MAXSIZE][LENGTH / 4]; // 存储全局字典
 char stop[MAXSIZE * 3][LENGTH / 4]; // 存储停用词
 int similarity_num = 0;
 double similarity[MAXSIZE]; // 存放语句之间的相似度
@@ -59,6 +59,8 @@ int main(void)
 
     fgets(input, MAXSIZE - 1, stdin); 
     scanf("%lf", &a); scanf("%d", &k); // 读取输入参数
+    if (k < 0) k = 0;
+    if (k > line_num) k = line_num;
 
     vector *semantic_input = generate_semantice_vector(input);
     vector *structure_input = generate_structure_vector(input);
@@ -144,7 +146,7 @@ void process_document(void)
             size_t len = p - start + 1;          /* 包含分隔符的长度 */
             if (len >= LENGTH) len = LENGTH - 1; /* 防止溢出 */
             if (*start == ' ') start++;
-            strncpy(global[line_num], start, len);
+            strncpy(global[line_num], start, len - 1);
             global[line_num][len] = '\0';
             start = p + 1;  /* 移到分隔符之后 */
         } 
@@ -661,15 +663,15 @@ int *retreive_top_k(int k) {
         k = MAXSIZE;           /* 若需要的数量超过数组大小，则截断 */
 
     /* 构建索引数组 0 .. MAXSIZE-1 */
-    int *indices = (int *)malloc(MAXSIZE * sizeof(int));
+    int *indices = (int *)malloc(line_num * sizeof(int));
     if (!indices)
         return NULL;
 
-    for (int i = 0; i < MAXSIZE; ++i)
+    for (int i = 0; i < line_num; ++i)
         indices[i] = i;
 
     /* 按规则排序索引 */
-    qsort(indices, MAXSIZE, sizeof(int), cmp_desc);
+    qsort(indices, line_num, sizeof(int), cmp_desc);
 
     /* 取出前 k 个序号 */
     int *result = (int *)malloc(k * sizeof(int));
