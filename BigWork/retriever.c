@@ -63,6 +63,9 @@ int main(void)
     vector *semantic_input = generate_semantice_vector(input);
     vector *structure_input = generate_structure_vector(input);
 
+    L2_vector(semantic_input);
+    min_max_vector(structure_input);
+
     similarity_num = line_num;
 
     for (int i = 0; i < line_num; i++)
@@ -70,10 +73,7 @@ int main(void)
         vector *semantic_retrieve = generate_semantice_vector(global[i]);
         vector *structure_retrieve = generate_structure_vector(global[i]);
 
-        L2_vector(semantic_input);
         L2_vector(semantic_retrieve);
-
-        min_max_vector(structure_input);
         min_max_vector(structure_retrieve);
 
         similarity[i] = calc_S_hybrid(*semantic_input, *semantic_retrieve, 
@@ -143,6 +143,7 @@ void process_document(void)
         {
             size_t len = p - start + 1;          /* 包含分隔符的长度 */
             if (len >= LENGTH) len = LENGTH - 1; /* 防止溢出 */
+            if (*start == ' ') start++;
             strncpy(global[line_num], start, len);
             global[line_num][len] = '\0';
             start = p + 1;  /* 移到分隔符之后 */
@@ -166,7 +167,7 @@ void process_document(void)
 
 int process_line(char *input, char vocab[LENGTH][LENGTH / 4]) 
 {
-    int vocab_count;
+    int vocab_count = 0;
     char word[LENGTH / 4];               // 暂存当前单词
     int wlen = 0;                        // 当前单词长度
     const int max_word_len = LENGTH / 4 - 1;
@@ -440,7 +441,7 @@ void load_stop_list(void) {
     while (count < max_words && fgets(line, sizeof(line), fp) != NULL) {
         // 去除末尾换行符（兼容 \n 和 \r\n）
         size_t len = strlen(line);
-        while (len > 0 && (line[len - 1] == '\n' || line[len - 1] == '\r')) {
+        while (len > 0 && (line[len - 1] == '\n' || line[len - 1] == '\r' || line[len - 1] == ' ')) {
             line[--len] = '\0';
         }
 
