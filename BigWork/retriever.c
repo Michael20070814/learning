@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #define MAXSIZE 512
 #define LENGTH 128
-#define DIM 6
+#define DIM 7
 
 typedef struct vector
 {
@@ -694,7 +694,8 @@ vector *generate_structure_vector(char *input)
     structure_input -> data[2] = calc_num(input);
     structure_input -> data[3] = calc_vowel_ratio(input);
     structure_input -> data[4] = calc_symbol_density(input);
-    structure_input -> data[5] = calc_num_ratio(input);
+    structure_input -> data[5] = calc_upper_density(input);
+    structure_input -> data[6] = calc_num_ratio(input);
 
     return structure_input;
 }
