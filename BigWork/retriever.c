@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #define MAXSIZE 2048
-#define LENGTH 512
+#define LENGTH 1024
 #define DIM 7
 
 typedef struct vector
@@ -89,6 +89,10 @@ int main(void)
 
     print(k, q);
 
+    free_vector(semantic_input);
+    free_vector(structure_input);
+    free(q);
+
     return 0;
 }
 
@@ -102,7 +106,9 @@ int ispunct_real(unsigned char c)
 
 void process_document(void)
 {
-    FILE *fp = fopen("document.txt", "r");
+    FILE *fp = fopen("document.txt", "rb");
+    if (fp == NULL)
+        fp = fopen("BigWork/document.txt", "rb");
 
     if (fp == NULL) 
     {
@@ -123,8 +129,8 @@ void process_document(void)
         fclose(fp);
         exit(EXIT_FAILURE);
     }
-    fread(buffer, 1, fsize, fp);
-    buffer[fsize] = '\0';
+    size_t bytes_read = fread(buffer, 1, fsize, fp);
+    buffer[bytes_read] = '\0';
     fclose(fp);
 
     const char *delimiters = ".?\n!";   /* 分隔符集合 */
@@ -133,6 +139,11 @@ void process_document(void)
 
     while (*start && line_num < MAXSIZE) 
     {
+        while (*start && isspace((unsigned char)*start))
+            start++;
+        if (*start == '\0')
+            break;
+
         /* 寻找下一个分隔符的位置 */
         char *p = start;
         while (*p && strchr(delimiters, *p) == NULL) 
@@ -144,17 +155,23 @@ void process_document(void)
         if (*p && strchr(delimiters, *p) != NULL) 
         {
             size_t len = p - start + 1;          /* 包含分隔符的长度 */
+            if (*p == '\n') len--;
+            while (len > 0 && isspace((unsigned char)start[len - 1]))
+                len--;
             if (len >= LENGTH) len = LENGTH - 1; /* 防止溢出 */
-            if (*start == ' ') start++;
-            strncpy(global[line_num], start, len - 1);
+            strncpy(global[line_num], start, len);
             global[line_num][len] = '\0';
             start = p + 1;  /* 移到分隔符之后 */
         } 
         /* 没有遇到分隔符但还有剩余字符（文件末尾） */
         else if (*start) 
         {
-            strncpy(global[line_num], start, LENGTH - 1); /* 会自动补\0 */
-            global[line_num][LENGTH - 1] = '\0';
+            size_t len = strlen(start);
+            while (len > 0 && isspace((unsigned char)start[len - 1]))
+                len--;
+            if (len >= LENGTH) len = LENGTH - 1;
+            strncpy(global[line_num], start, len);
+            global[line_num][len] = '\0';
             start += strlen(start);  /* 结束循环 */
         } 
         else 
@@ -237,7 +254,7 @@ void generate_dict() {
             }
 
             // 若未重复且字典未满，则添加进字典
-            if (!found && dict_num < LENGTH) {
+            if (!found && dict_num < MAXSIZE) {
                 strcpy(dict[dict_num], vocab[j]);
                 dict_num++;
             }
@@ -429,6 +446,8 @@ double calc_num_ratio(char *input) {
 
 void load_stop_list(void) {
     FILE *fp = fopen("stopList.txt", "r");
+    if (fp == NULL)
+        fp = fopen("BigWork/stopList.txt", "r");
     if (fp == NULL) {
         /* 文件打开失败，将第一个元素置为空字符串以示空列表 */
         stop[0][0] = '\0';
@@ -443,7 +462,7 @@ void load_stop_list(void) {
     while (count < max_words && fgets(line, sizeof(line), fp) != NULL) {
         // 去除末尾换行符（兼容 \n 和 \r\n）
         size_t len = strlen(line);
-        while (len > 0 && (line[len - 1] == '\n' || line[len - 1] == '\r' || line[len - 1] == ' ')) {
+        while (len > 0 && isspace((unsigned char)line[len - 1])) {
             line[--len] = '\0';
         }
 
@@ -500,7 +519,7 @@ int is_stop_list(char *input) {
 }
 
 vector *init_vector(int num) {
-    if (num <= 0) {
+    if (num < 0) {
         return NULL;               // 无效维度
     }
 
@@ -508,6 +527,11 @@ vector *init_vector(int num) {
     vector *v = (vector*)malloc(sizeof(vector));
     if (v == NULL) {
         return NULL;               // 结构体内存分配失败
+    }
+    v->index = num;
+    if (num == 0) {
+        v->data = NULL;
+        return v;
     }
 
     // 为 double 数组分配内存
@@ -589,7 +613,9 @@ void min_max_vector(vector *input) {
     double range = max_val - min_val;
     const double eps = 1e-12;  // 极小阈值，避免浮点误差
     if (range <= eps) {
-        return;   // 所有元素相等，归一化无意义
+        for (int i = 0; i < n; ++i)
+            data[i] = 0.0;
+        return;
     }
 
     // 3. 执行 Min-Max 归一化
@@ -659,8 +685,10 @@ int *retreive_top_k(int k) {
     if (k <= 0)
         return NULL;
 
-    if (k > MAXSIZE)
-        k = MAXSIZE;           /* 若需要的数量超过数组大小，则截断 */
+    if (k > line_num)
+        k = line_num;
+    if (k <= 0)
+        return NULL;
 
     /* 构建索引数组 0 .. MAXSIZE-1 */
     int *indices = (int *)malloc(line_num * sizeof(int));
@@ -732,6 +760,9 @@ vector *generate_semantice_vector(char *input)
 
 void print(int num, int *result)
 {
+    if (num <= 0 || result == NULL)
+        return;
+
     for (int i = 0; i < num; i++)
     {
         printf("%s\n", global[result[i]]);
