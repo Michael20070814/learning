@@ -143,15 +143,15 @@ void DFSUtil(ALGraph *g, int v, int visited[], int to)
             path[pathlen++] = p -> data;
             print(to);
             pathlen--;
-            return ;
         }
 
-        if (visited[p -> adjvex] == 0)
+        if (p -> adjvex != to && visited[p -> adjvex] == 0)
         {    
             path[pathlen++] = p -> data;
             DFSUtil(g, p -> adjvex, visited, to);
         }
     }
+
     pathlen--;
     visited[v] = 0;
 }
@@ -164,7 +164,6 @@ void print()
     }
     printf("\n");
 
-    pathlen--;
 }
 
 void travelDFS(ALGraph *g, int from, int obj)
