@@ -143,6 +143,7 @@ void DFSUtil(ALGraph *g, int v, int visited[])
             DFSUtil(g, p -> adjvex, visited);
         }
     }
+    visited[v] = 0;
 }
 
 void travelDFS(ALGraph *g)
