@@ -81,6 +81,7 @@ void shell_sort(int arr[], int n)
 }
 
 /* Keep the subtree rooted at root_index as a max heap. */
+// recursion
 static void heapify(int arr[], int n, int root_index)
 {
     int largest = root_index;
@@ -100,6 +101,51 @@ static void heapify(int arr[], int n, int root_index)
         heapify(arr, n, largest);
     }
 }
+
+int adjust(int k[ ],int i,int n)
+{
+    int j;
+    int temp;
+    int result = 0;
+    temp=k[i];
+    j=2*i+1;  //由于数组下标从0开始，所以2*i +1 是指向结点左孩子的下标，
+    while(j<n)
+    {
+        if(j+1<n && k[j]<k[j+1])
+            j++; // j指向i结点左右孩子中值大的那个结点
+        result++;
+        if(temp<k[j])
+        {
+            k[(j - 1) / 2]= k[j];  // j结点的值赋到其父结点中
+            j=2*j+1;   //  j指向自己的左孩子
+        } 
+        else
+            break;
+    }
+    k[(j - 1) / 2]=temp;
+
+    return result;
+}
+
+int heapSort(int k[ ],int n)
+{
+    int i, temp;
+
+    int result = 0;
+    for(i=n/2-1;i>=0;i--)
+        result += adjust(k,i,n);
+    for(i=n-1;i>=1;i--)
+    {
+        temp=k[i];
+        k[i]=k[0];
+        k[0]=temp;
+        result += adjust(k,0,i);  //每次都排好一个位置
+    }
+
+    return result;
+}
+
+
 
 /* Heap sort: build a max heap, then move the largest value to the end. */
 void heap_sort(int arr[], int n)
